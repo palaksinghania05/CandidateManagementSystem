@@ -62,4 +62,9 @@ public class CandidateBean {
         this.grade = grade;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%-5s%-4s%-3d%-3d%-3d%-5s%-5s" +
+                "", getId(), getName(), getM1(), getM2(), getM3(), getResult(), getGrade());
+    }
 }

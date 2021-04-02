@@ -34,36 +34,57 @@ public class CandidateDAO {
         }
         return status;
     }
-    public ArrayList<CandidateBean> getByResult(String criteria) {
-        Connection connection = DBUtil.getDBConn();
-        ArrayList<CandidateBean> list=new ArrayList<>();
-        //write code here
-        try{
-                String sql = "SELECT * FROM candidate_tbl where Result=?;";
-                PreparedStatement statement = connection.prepareStatement(sql);
-                if(criteria.equalsIgnoreCase("pass"))
-                    statement.setString(1,"Pass");
-                else if (criteria.equalsIgnoreCase("fail"))
-                    statement.setString(1,"Fail");
-                else if(criteria.equalsIgnoreCase("all"))
-                    statement.setString(1,"All");
-                else
-                    throw new WrongDataException("Data Incorrect");
-                ResultSet resultSet = statement.executeQuery(sql);
-                if(resultSet != null) {
-                    while (resultSet.next()) {
-                        list.add(new CandidateBean(resultSet.getString("ID"), resultSet.getString("Name"),
-                                resultSet.getInt("M1"), resultSet.getInt("M2"),
-                                resultSet.getInt("M3"), resultSet.getString("Result"), resultSet.getString("Grade")));
-                    }
 
-                } else
-                    return null;
-        } catch (SQLException | WrongDataException e) {
-            return null;
+    public ArrayList<CandidateBean> getByResult(String criteria) throws WrongDataException, SQLException {
+        Connection connection = DBUtil.getDBConn();
+        //write code here
+        if(criteria.equalsIgnoreCase("all")){
+            ArrayList<CandidateBean> list = new ArrayList<>();
+            String sql = "SELECT * FROM candidate_tbl;";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet != null) {
+                while (resultSet.next()) {
+                    CandidateBean object = new CandidateBean(resultSet.getString("ID"), resultSet.getString("Name"),
+                            resultSet.getInt("M1"), resultSet.getInt("M2"),
+                            resultSet.getInt("M3"), resultSet.getString("Result"), resultSet.getString("Grade"));
+                    list.add(object);
+                }
+            }
+            if(list.size() != 0)
+                return list;
+            else
+                return null;
+        } if(criteria.equalsIgnoreCase("pass") || criteria.equalsIgnoreCase("fail")) {
+            ArrayList<CandidateBean> passList = new ArrayList<>();
+            ArrayList<CandidateBean> failList = new ArrayList<>();
+            String sql = "SELECT * FROM candidate_tbl;";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet != null) {
+                while (resultSet.next()) {
+                    if(resultSet.getString("Result").equalsIgnoreCase("pass")) {
+                        CandidateBean obj = new CandidateBean(resultSet.getString("ID"), resultSet.getString("Name"),
+                                resultSet.getInt("M1"), resultSet.getInt("M2"),
+                                resultSet.getInt("M3"), resultSet.getString("Result"), resultSet.getString("Grade"));
+                        passList.add(obj);
+                    }
+                    else {
+                        CandidateBean obj = new CandidateBean(resultSet.getString("ID"), resultSet.getString("Name"),
+                                resultSet.getInt("M1"), resultSet.getInt("M2"),
+                                resultSet.getInt("M3"), resultSet.getString("Result"), resultSet.getString("Grade"));
+                        failList.add(obj);
+                    }
+                }
+            }
+            if (criteria.equalsIgnoreCase("pass"))
+                return passList;
+            if (criteria.equalsIgnoreCase("fail"))
+                return failList;
         }
-        return list;
+        return null;
     }
+
     public String generateCandidateId (String name)
     {
         StringBuilder newId= new StringBuilder();
